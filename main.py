@@ -1,6 +1,8 @@
 from flask import Flask, render_template, Response
 import cv2
 import numpy as np
+from mail2 import send_mail
+
 
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)
@@ -60,7 +62,7 @@ def generate_frames():
                 if prev_frame is not None:
                     if are_two_images_different(frame, prev_frame):
                         cv2.imwrite(str(frame_counter)+'.jpg', frame)
-
+                        send_mail()
                 prev_frame = frame
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
@@ -75,6 +77,10 @@ def index():
 def video():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/send')
+def send():
+
+    return 'I ve send'
 
 if __name__ == "__main__":
     app.run(debug=True)
