@@ -1,6 +1,8 @@
 # secret
+secret.py
 
-telegram_key.py
+#images
+*.jpg
 
 #pycharm
 .idea/

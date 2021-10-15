@@ -1,8 +1,8 @@
 from flask import Flask, render_template, Response
 import cv2
 import numpy as np
-from mail2 import send_mail
-
+from mail import send_mail
+from secret import sender_mail, sender_pass
 
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)
@@ -56,16 +56,18 @@ def generate_frames():
             break
         else:
             ret, buffer = cv2.imencode('.jpg', frame)
-            frame_bytes = buffer.tobytes()
+            img_m = buffer.tostring()
+            print(type(img_m))
+            buffer_bytes = buffer.tobytes()
             frame_counter+=1
             if frame_counter % 10 == 0:
                 if prev_frame is not None:
                     if are_two_images_different(frame, prev_frame):
                         cv2.imwrite(str(frame_counter)+'.jpg', frame)
-                        send_mail()
+                        send_mail(sender_mail, sender_pass, img_m)
                 prev_frame = frame
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + buffer_bytes + b'\r\n')
 
 
 @app.route('/')
