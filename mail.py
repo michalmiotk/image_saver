@@ -1,9 +1,11 @@
 import smtplib
 import imghdr
 from email.message import EmailMessage
-from email.mime.image import MIMEImage
+from encode import from_bytes_cipher_to_plain_text
 
-def send_mail(sender_mail, sender_pass, image_bytes,  image_name='some.jpeg'):
+def send_mail(sender_mail_encoded_bytes, sender_pass_encoded_bytes, image_bytes,  image_name='some.jpeg'):
+    sender_mail = from_bytes_cipher_to_plain_text(sender_mail_encoded_bytes)
+    sender_pass = from_bytes_cipher_to_plain_text(sender_pass_encoded_bytes)
     Sender_Email = sender_mail
     Reciever_Email = sender_mail
     Password = sender_pass
