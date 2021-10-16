@@ -1,6 +1,10 @@
+import webbrowser
+from threading import Timer
+
 from flask import Flask, render_template, Response
 import cv2
 import numpy as np
+
 from mail import send_mail
 from secret import sender_mail, sender_pass
 
@@ -23,7 +27,6 @@ def calculate_percent_of_different_pixels(counter, steps_width, steps_height):
 
 def are_two_images_different(img_prev, img_actual):
     assert img_prev.shape == img_actual.shape
-    print(img_actual.shape)
     steps_width, steps_height =100, 100
 
     different_pixels_counter = 0
@@ -37,8 +40,8 @@ def are_two_images_different(img_prev, img_actual):
                     different_pixels_counter += 1
     thres_percent_of_classified_different_pixels = 20
 
-    print('different_pixels_counter', different_pixels_counter)
-    print('percent', calculate_percent_of_different_pixels(different_pixels_counter, steps_width, steps_height))
+    #print('different_pixels_counter', different_pixels_counter)
+    #print('percent', calculate_percent_of_different_pixels(different_pixels_counter, steps_width, steps_height))
     if calculate_percent_of_different_pixels(different_pixels_counter, steps_width, steps_height) >= thres_percent_of_classified_different_pixels:
         return True
     else:
@@ -57,13 +60,12 @@ def generate_frames():
         else:
             ret, buffer = cv2.imencode('.jpg', frame)
             img_m = buffer.tostring()
-            print(type(img_m))
             buffer_bytes = buffer.tobytes()
             frame_counter+=1
             if frame_counter % 10 == 0:
                 if prev_frame is not None:
                     if are_two_images_different(frame, prev_frame):
-                        cv2.imwrite(str(frame_counter)+'.jpg', frame)
+                        #cv2.imwrite(str(frame_counter)+'.jpg', frame)
                         send_mail(sender_mail, sender_pass, img_m)
                 prev_frame = frame
         yield (b'--frame\r\n'
@@ -79,10 +81,11 @@ def index():
 def video():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/send')
-def send():
 
-    return 'I ve send'
+def open_browser():
+    webbrowser.open_new('http://127.0.0.1:5000/')
+
 
 if __name__ == "__main__":
+    Timer(1, open_browser).start();
     app.run(debug=True)
